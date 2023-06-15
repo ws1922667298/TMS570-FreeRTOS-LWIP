@@ -47,7 +47,14 @@
 
 /* Include Files */
 
+#include <arch/sys_arch.h>
+#include <stdio.h>
+#include <lwip/api.h>
 #include "sys_common.h"
+#include "FreeRTOS.h"
+#include "os_task.h"
+#include "sci.h"
+#include "string.h"
 
 /* USER CODE BEGIN (1) */
 /* USER CODE END */
@@ -68,14 +75,52 @@ extern void EMAC_LwIP_Main(uint8_t *emacAddress);
 uint8 emacAddress[6U] = {0x00U, 0x08U, 0xEEU, 0x03U, 0xA6U, 0x6CU};
 uint32 emacPhyAddress = 1U;
 
+void lwipTestTask(void *args) {
+    EMAC_LwIP_Main(emacAddress);
+}
+
+void monitorTask(void *arg) {
+    char pWriteBuffer[2048];
+    while (1) {
+        sys_msleep(5000);
+        vTaskList((char *) &pWriteBuffer);
+        printf("task_name   task_state  priority   stack  tasK_num\n");
+        printf("%s\n", pWriteBuffer);
+    }
+    vTaskDelete(NULL);
+}
+
 int main(void) {
 /* USER CODE BEGIN (3) */
+    sciInit();
     EMAC_LwIP_Main(emacAddress);
+//    xTaskCreate(monitorTask, "monitorTask", 4096, NULL, 1, NULL);
+    vTaskStartScheduler();
 /* USER CODE END */
 
     return 0;
 }
 
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName ) {
+    printf("-----------stack_over_flow:%s", pcTaskName);
+}
 
 /* USER CODE BEGIN (4) */
+int fputs(const char *_ptr, FILE *_fp)
+{
+    unsigned int i, len;
+    len = strlen(_ptr);
+    for(i=0 ; i<len ; i++)
+    {
+        while ((scilinREG->FLR & (uint32)SCI_TX_INT) == 0U);
+        scilinREG->TD = (unsigned char) _ptr[i];
+    }
+    return len;
+}
+int fputc(int ch, FILE *f)
+{
+    while ((scilinREG->FLR & (uint32)SCI_TX_INT) == 0U);//循环发送,直到发送完毕
+    scilinREG->TD = (uint8) ch;
+    return ch;
+}
 /* USER CODE END */

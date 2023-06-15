@@ -24,7 +24,7 @@ set(CMAKE_AR "${SDK_BIN}/armar")
 
 # project settings
 
-project(lwip_os_test2 C CXX ASM)
+project(lwip_os_test3 C CXX ASM)
 
 find_program(TOOLCHAIN_PATH ${CMAKE_C_COMPILER})
 get_filename_component(TOOLCHAIN_PATH ${TOOLCHAIN_PATH} DIRECTORY)
@@ -47,7 +47,7 @@ include_directories(lwip-1.4.1/src/include/ipv4)
 include_directories(lwip-1.4.1/src/include/ipv4/lwip)
 include_directories(lwip-1.4.1/ports/hdk/include)
 
-add_link_options(--stack_size=0x800 --heap_size=0x800 -i${TOOLCHAIN_PATH}/lib -i${TOOLCHAIN_PATH}/include --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info=lwip_os_test2_linkInfo.xml --rom_model --be32 ${CMAKE_SOURCE_DIR}/source/sys_link.cmd)
+add_link_options(--stack_size=0x800 --heap_size=0x800 -i${TOOLCHAIN_PATH}/lib -i${TOOLCHAIN_PATH}/include --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info=lwip_os_test3_linkInfo.xml --rom_model --be32 ${CMAKE_SOURCE_DIR}/source/sys_link.cmd)
 
 set(SOURCE_FILES
         source/dabort.asm

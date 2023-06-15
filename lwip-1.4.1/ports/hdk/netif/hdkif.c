@@ -340,6 +340,8 @@ hdkif_transmit(struct hdkif *hdkif, struct pbuf *pbuf) {
     }
 
     txch->active_tail = bd_end;
+
+    lwIPTxIntHandler(0);
 }
 
 /**
@@ -723,7 +725,7 @@ hdkif_rx_inthandler(struct netif *netif) {
             LINK_STATS_INC(link.recv);
 
             /* Process the packet */
-            if (ethernet_input((struct pbuf *) q, netif) != ERR_OK) {
+            if (tcpip_input((struct pbuf *) q, netif) != ERR_OK) {
                 /* Adjust the link statistics */
                 LINK_STATS_INC(link.memerr);
                 LINK_STATS_INC(link.drop);
@@ -797,7 +799,7 @@ hdkif_rx_inthandler(struct netif *netif) {
     }
 
     EMACCoreIntAck(hdkif->emac_base, EMAC_INT_CORE0_RX);
-    EMACCoreIntAck(hdkif->emac_base, EMAC_INT_CORE0_TX);
+//    EMACCoreIntAck(hdkif->emac_base, EMAC_INT_CORE0_TX);
 }
 
 /**

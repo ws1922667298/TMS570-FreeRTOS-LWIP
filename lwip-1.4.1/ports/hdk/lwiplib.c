@@ -154,7 +154,7 @@ unsigned int lwIPInit(unsigned int instNum, unsigned char *macArray,
     unsigned int *ipAddrPtr;
     volatile unsigned int cnt = 0x3FFFFFFF;
 
-    lwip_init();
+    tcpip_init(NULL, NULL);
 
     /* Setup the network address values. */
     if (ipMode == IPADDR_USE_STATIC) {
@@ -176,7 +176,7 @@ unsigned int lwIPInit(unsigned int instNum, unsigned char *macArray,
     */
     if (NULL ==
         netif_add(&hdkNetIF[instNum], &ip_addr, &net_mask, &gw_addr, &instNum,
-                  hdkif_init, ip_input)) {
+                  hdkif_init, tcpip_input)) {
         return 0;
     };
 

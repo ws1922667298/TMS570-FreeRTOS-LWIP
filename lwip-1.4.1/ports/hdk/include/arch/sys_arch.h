@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
- * All rights reserved. 
- * 
- * Redistribution and use in source and binary forms, with or without modification, 
+ * Copyright (c) 2017 Simon Goldschmidt
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice,
@@ -11,62 +11,85 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission. 
+ *    derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED 
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
- * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
- * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
- * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+ * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
  * This file is part of the lwIP TCP/IP stack.
- * 
- * Author: Adam Dunkels <adam@sics.se>
+ *
+ * Author: Simon Goldschmdit <goldsimon@gmx.de>
  *
  */
-#ifndef __ARCH_SYS_ARCH_H__
-#define __ARCH_SYS_ARCH_H__
+#ifndef LWIP_ARCH_SYS_ARCH_H
+#define LWIP_ARCH_SYS_ARCH_H
 
-/*
-#include "SafeRTOS/SafeRTOS_API.h"
+#include "lwip/opt.h"
+#include "lwip/arch.h"
 
- Find the size of the largest required mbox.
-#define MAX1 ((TCPIP_MBOX_SIZE > DEFAULT_RAW_RECVMBOX_SIZE) ? \
-              TCPIP_MBOX_SIZE : DEFAULT_RAW_RECVMBOX_SIZE)
-#define MAX2 ((MAX1 > DEFAULT_UDP_RECVMBOX_SIZE) ? MAX1 : \
-              DEFAULT_UDP_RECVMBOX_SIZE)
-#define MAX3 ((MAX2 > DEFAULT_TCP_RECVMBOX_SIZE) ? MAX2 : \
-              DEFAULT_TCP_RECVMBOX_SIZE)
-#define MBOX_MAX ((MAX3 > DEFAULT_ACCEPTMBOX_SIZE) ? MAX3 : \
-                  DEFAULT_ACCEPTMBOX_SIZE)
+/** This is returned by _fromisr() sys functions to tell the outermost function
+ * that a higher priority task was woken and the scheduler needs to be invoked.
+ */
+#define ERR_NEED_SCHED 123
 
- A structure to hold the variables for a sys_sem_t.
-typedef struct {
-  xQueueHandle queue;
-  signed char buffer[sizeof(void *) + portQUEUE_OVERHEAD_BYTES];
-} sem_t;
+/* This port includes FreeRTOS headers in sys_arch.c only.
+ *  FreeRTOS uses pointers as object types. We use wrapper structs instead of
+ * void pointers directly to get a tiny bit of type safety.
+ */
 
- A structure to hold the variables for a sys_mbox_t.
-typedef struct {
-  xQueueHandle queue;
-  signed char buffer[(sizeof(void *) * MBOX_MAX) + portQUEUE_OVERHEAD_BYTES];
-} mbox_t;
+void sys_arch_msleep(u32_t delay_ms);
+#define sys_msleep(ms) sys_arch_msleep(ms)
 
- Typedefs for the various port-specific types.
-typedef mbox_t *sys_mbox_t;
+#if SYS_LIGHTWEIGHT_PROT
+typedef u32_t sys_prot_t;
+#endif /* SYS_LIGHTWEIGHT_PROT */
 
-typedef xTaskHandle sys_thread_t;
+#if !LWIP_COMPAT_MUTEX
+struct _sys_mut {
+  void *mut;
+};
+typedef struct _sys_mut sys_mutex_t;
+#define sys_mutex_valid_val(mutex)   ((mutex).mut != NULL)
+#define sys_mutex_valid(mutex)       (((mutex) != NULL) && sys_mutex_valid_val(*(mutex)))
+#define sys_mutex_set_invalid(mutex) ((mutex)->mut = NULL)
+#endif /* !LWIP_COMPAT_MUTEX */
 
- The value for an unallocated mbox.
-#define SYS_MBOX_NULL       0
-*/
+struct _sys_sem {
+  void *sem;
+};
+typedef struct _sys_sem sys_sem_t;
+#define sys_sem_valid_val(sema)   ((sema).sem != NULL)
+#define sys_sem_valid(sema)       (((sema) != NULL) && sys_sem_valid_val(*(sema)))
+#define sys_sem_set_invalid(sema) ((sema)->sem = NULL)
 
-typedef u8_t sys_prot_t;
+struct _sys_mbox {
+  void *mbx;
+};
+typedef struct _sys_mbox sys_mbox_t;
+#define sys_mbox_valid_val(mbox)   ((mbox).mbx != NULL)
+#define sys_mbox_valid(mbox)       (((mbox) != NULL) && sys_mbox_valid_val(*(mbox)))
+#define sys_mbox_set_invalid(mbox) ((mbox)->mbx = NULL)
 
-#endif /* __ARCH_SYS_ARCH_H__ */
+struct _sys_thread {
+  void *thread_handle;
+};
+typedef struct _sys_thread sys_thread_t;
 
+#if LWIP_NETCONN_SEM_PER_THREAD
+sys_sem_t* sys_arch_netconn_sem_get(void);
+void sys_arch_netconn_sem_alloc(void);
+void sys_arch_netconn_sem_free(void);
+#define LWIP_NETCONN_THREAD_SEM_GET()   sys_arch_netconn_sem_get()
+#define LWIP_NETCONN_THREAD_SEM_ALLOC() sys_arch_netconn_sem_alloc()
+#define LWIP_NETCONN_THREAD_SEM_FREE()  sys_arch_netconn_sem_free()
+#endif /* LWIP_NETCONN_SEM_PER_THREAD */
+
+#endif /* LWIP_ARCH_SYS_ARCH_H */

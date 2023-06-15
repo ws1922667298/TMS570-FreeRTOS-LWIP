@@ -24,6 +24,9 @@
 #include "mdio.h"
 #include "phy_dp83640.h"
 #include "sci.h"
+#include "FreeRTOS.h"
+#include "os_task.h"
+#include "os_semphr.h"
 
 #endif
 
@@ -90,6 +93,25 @@ void smallDelay(void) {
 
 /* USER CODE END */
 
+// 网口中断信号量
+SemaphoreHandle_t semaphoreHandle;
+
+void lwipRTask(void *args) {
+    while (1) {
+        while (xSemaphoreTake(semaphoreHandle, 5000) == pdTRUE){
+//            taskENTER_CRITICAL();
+            lwIPRxIntHandler(0);
+//            taskEXIT_CRITICAL();
+        }
+    }
+}
+
+void lwipTTask(void *args) {
+    while (1) {
+        lwIPTxIntHandler(0);
+    }
+}
+
 void EMAC_LwIP_Main(uint8_t *macAddress) {
     unsigned int ipAddr;
     uint8_t testChar;
@@ -102,8 +124,6 @@ void EMAC_LwIP_Main(uint8_t *macAddress) {
     sciInit();
 
     /* Enable the interrupt generation in CPSR register */
-    IntMasterIRQEnable();
-    _enable_FIQ();
 
     sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
     sciDisplayText(sciREGx, txtTitle, sizeof(txtTitle));
@@ -135,53 +155,60 @@ void EMAC_LwIP_Main(uint8_t *macAddress) {
     sciDisplayText(sciREGx, (uint8_t *) "..DONE", sizeof("..DONE"));
     sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
 
-    if (0 == ipAddr) {
-        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-        sciDisplayText(sciREGx, txtErrorInit, sizeof(txtErrorInit));
-        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-    } else {
-        /* Convert IP Address to string */
-        devIPAddress.s_addr = ipAddr;
-        txtIPAddrItoA = (uint8_t *) inet_ntoa(devIPAddress);
-        LocatorConfig(macAddress, "HDK enet_lwip");
+    // 创建信号量
+    semaphoreHandle = xSemaphoreCreateBinary();
+    xTaskCreate(lwipRTask, "lwipRTask", 512, NULL, 5, NULL);
+//    xTaskCreate(lwipTTask, "lwipTTask", 512, NULL, 1, 0);
 
-        /* Initialize the sample httpd server. */
-        sciDisplayText(sciREGx, (uint8_t *) "Starting Web Server", sizeof("Starting Web Server"));
-        httpd_init();
-        sciDisplayText(sciREGx, (uint8_t *) "..DONE", sizeof("..DONE"));
-        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-
-        /* Loop forever.  All the work is done in interrupt handlers. */
-        while (1) {
-            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-
-            sciDisplayText(sciREGx, txtTitle, sizeof(txtTitle));
-            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-
-            sciDisplayText(sciREGx, txtTI, sizeof(txtTI));
-            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-#ifdef __little_endian__
-            sciDisplayText(sciREGx, txtLittleEndian, sizeof(txtLittleEndian));
-            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-#else
-            sciDisplayText(sciREGx, txtBigEndian, sizeof(txtBigEndian));
-            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-#endif
-            sciDisplayText(sciREGx, txtIPAddrTxt, sizeof(txtIPAddrTxt));
-            sciDisplayText(sciREGx, txtIPAddrItoA, 16);
-            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-
-            sciDisplayText(sciREGx, txtNote1, sizeof(txtNote1));
-            sciDisplayText(sciREGx, txtIPAddrItoA, 16);
-            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
-
-
-            /* Before printing the next set, wait for a character on the terminal */
-            sciReceive(sciREGx, 1, &testChar);
-        }
-    }
+    IntMasterIRQEnable();
+    _enable_FIQ();
+//    if (0 == ipAddr) {
+//        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//        sciDisplayText(sciREGx, txtErrorInit, sizeof(txtErrorInit));
+//        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//    } else {
+//        /* Convert IP Address to string */
+//        devIPAddress.s_addr = ipAddr;
+//        txtIPAddrItoA = (uint8_t *) inet_ntoa(devIPAddress);
+//        LocatorConfig(macAddress, "HDK enet_lwip");
+//
+//        /* Initialize the sample httpd server. */
+//        sciDisplayText(sciREGx, (uint8_t *) "Starting Web Server", sizeof("Starting Web Server"));
+//        httpd_init();
+//        sciDisplayText(sciREGx, (uint8_t *) "..DONE", sizeof("..DONE"));
+//        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//
+//        /* Loop forever.  All the work is done in interrupt handlers. */
+//        while (1) {
+//            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//
+//            sciDisplayText(sciREGx, txtTitle, sizeof(txtTitle));
+//            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//
+//            sciDisplayText(sciREGx, txtTI, sizeof(txtTI));
+//            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//#ifdef __little_endian__
+//            sciDisplayText(sciREGx, txtLittleEndian, sizeof(txtLittleEndian));
+//            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//#else
+//            sciDisplayText(sciREGx, txtBigEndian, sizeof(txtBigEndian));
+//            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//#endif
+//            sciDisplayText(sciREGx, txtIPAddrTxt, sizeof(txtIPAddrTxt));
+//            sciDisplayText(sciREGx, txtIPAddrItoA, 16);
+//            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//
+//            sciDisplayText(sciREGx, txtNote1, sizeof(txtNote1));
+//            sciDisplayText(sciREGx, txtIPAddrItoA, 16);
+//            sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
+//
+//
+//            /* Before printing the next set, wait for a character on the terminal */
+//            sciReceive(sciREGx, 1, &testChar);
+//        }
+//    }
 }
 
 
@@ -250,7 +277,11 @@ volatile int countEMACCore0RxIsr = 0;
 
 void EMACCore0RxIsr(void) {
     countEMACCore0RxIsr++;
-    lwIPRxIntHandler(0);
+    BaseType_t xHigherPriorityTaskWoken;
+    xSemaphoreGiveFromISR(semaphoreHandle, &xHigherPriorityTaskWoken);
+     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+//    EMACCoreIntAck(EMAC_0_BASE, EMAC_INT_CORE0_RX);
+//    lwIPRxIntHandler(0);
 }
 
 /*

@@ -59,7 +59,7 @@
 **                    Platform specific locking 
 *****************************************************************************/
 #define SYS_LIGHTWEIGHT_PROT            1          
-#define NO_SYS                          1
+#define NO_SYS                          0
 
 /*****************************************************************************
 **                          Memory Options
@@ -104,7 +104,7 @@
 #define PBUF_POOL_BUFSIZE               256
                                            /* default is LWIP_MEM_ALIGN_SIZE(TCP_MSS+40+PBUF_LINK_HLEN)*/
 #define ETH_PAD_SIZE                    0           
-#define LWIP_NETCONN                    0          /*default is 1*/ 
+#define LWIP_NETCONN                    0          /*default is 1*/
 
 /*****************************************************************************
 **                           Socket  Options

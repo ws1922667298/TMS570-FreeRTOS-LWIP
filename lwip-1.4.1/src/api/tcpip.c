@@ -85,8 +85,10 @@ tcpip_thread(void *arg)
     UNLOCK_TCPIP_CORE();
     LWIP_TCPIP_THREAD_ALIVE();
     /* wait for a message, timeouts are processed while waiting */
-    sys_timeouts_mbox_fetch(&mbox, (void **)&msg);
+    sys_timeouts_mbox_fetch(&mbox, (void **)&msg);\
+      _disable_IRQ();
     LOCK_TCPIP_CORE();
+
     switch (msg->type) {
 #if LWIP_NETCONN
     case TCPIP_MSG_API:
@@ -147,6 +149,8 @@ tcpip_thread(void *arg)
       break;
     }
   }
+
+    _enable_IRQ();
 }
 
 /**

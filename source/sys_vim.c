@@ -406,13 +406,13 @@ void vimInit(void)
                         | (uint32)((uint32)1U << 6U)
                         | (uint32)((uint32)1U << 7U)
                         | (uint32)((uint32)1U << 8U)
-                        | (uint32)((uint32)0U << 9U)
+                        | (uint32)((uint32)0U << 9U) //73
                         | (uint32)((uint32)1U << 10U)
                         | (uint32)((uint32)1U << 11U)
                         | (uint32)((uint32)1U << 12U)
-                        | (uint32)((uint32)1U << 13U)
+                        | (uint32)((uint32)0U << 13U) //77tx
                         | (uint32)((uint32)1U << 14U)
-                        | (uint32)((uint32)1U << 15U)
+                        | (uint32)((uint32)1U << 15U) //79rx
                         | (uint32)((uint32)1U << 16U)
                         | (uint32)((uint32)1U << 17U)
                         | (uint32)((uint32)0U << 18U)
