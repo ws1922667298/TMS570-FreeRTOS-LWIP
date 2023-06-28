@@ -211,7 +211,7 @@ PACK_STRUCT_END
 
 #define TCP_EVENT_ACCEPT(pcb,err,ret)                          \
   do {                                                         \
-    if((pcb)->accept != NULL)                                  \
+    if((pcb)->lwiperf_tcp_accept != NULL)                      \
       (ret) = (pcb)->accept((pcb)->callback_arg,(pcb),(err));  \
     else (ret) = ERR_ARG;                                      \
   } while (0)
@@ -225,7 +225,7 @@ PACK_STRUCT_END
 
 #define TCP_EVENT_RECV(pcb,p,err,ret)                          \
   do {                                                         \
-    if((pcb)->recv != NULL) {                                  \
+    if((pcb)->lwip_recv != NULL) {                                  \
       (ret) = (pcb)->recv((pcb)->callback_arg,(pcb),(p),(err));\
     } else {                                                   \
       (ret) = tcp_recv_null(NULL, (pcb), (p), (err));          \
@@ -234,7 +234,7 @@ PACK_STRUCT_END
 
 #define TCP_EVENT_CLOSED(pcb,ret)                                \
   do {                                                           \
-    if(((pcb)->recv != NULL)) {                                  \
+    if(((pcb)->lwip_recv != NULL)) {                                  \
       (ret) = (pcb)->recv((pcb)->callback_arg,(pcb),NULL,ERR_OK);\
     } else {                                                     \
       (ret) = ERR_OK;                                            \

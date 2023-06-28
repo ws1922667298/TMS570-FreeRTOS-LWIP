@@ -99,9 +99,9 @@ raw_input(struct pbuf *p, struct netif *inp)
 #endif /* IP_SOF_BROADCAST_RECV */
       {
         /* receive callback function available? */
-        if (pcb->recv != NULL) {
+        if (pcb->row_recv != NULL) {
           /* the receive callback function did not eat the packet? */
-          if (pcb->recv(pcb->recv_arg, pcb, p, ip_current_src_addr()) != 0) {
+          if (pcb->row_recv(pcb->recv_arg, pcb, p, ip_current_src_addr()) != 0) {
             /* receive function ate the packet */
             p = NULL;
             eaten = 1;
@@ -183,7 +183,7 @@ void
 raw_recv(struct raw_pcb *pcb, raw_recv_fn recv, void *recv_arg)
 {
   /* remember recv() callback and user data */
-  pcb->recv = recv;
+  pcb->row_recv = recv;
   pcb->recv_arg = recv_arg;
 }
 

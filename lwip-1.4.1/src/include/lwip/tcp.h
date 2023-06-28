@@ -163,6 +163,7 @@ enum tcp_state {
   /* ports are in host byte order */ \
   u16_t local_port
 
+struct tcp_pcb * tcp_new_ip_type (u8_t type);
 
 /* the TCP protocol control block */
 struct tcp_pcb {
@@ -251,7 +252,8 @@ struct tcp_pcb {
   /* Function to be called when more send buffer space is available. */
   tcp_sent_fn sent;
   /* Function to be called when (in-sequence) data has arrived. */
-  tcp_recv_fn recv;
+  tcp_accept_fn lwiperf_tcp_accept;
+  tcp_recv_fn lwip_recv;
   /* Function to be called when a connection has been set up. */
   tcp_connected_fn connected;
   /* Function which is called periodically. */

@@ -341,9 +341,10 @@ int lwip_select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptse
                 struct timeval *timeout);
 int lwip_ioctl(int s, long cmd, void *argp);
 int lwip_fcntl(int s, int cmd, int val);
+err_t lwiperf_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err);
 
 #if LWIP_COMPAT_SOCKETS
-#define accept(a,b,c)         lwip_accept(a,b,c)
+#define accept(a,b,c)         lwiperf_tcp_accept(a,b,c)
 #define bind(a,b,c)           lwip_bind(a,b,c)
 #define shutdown(a,b)         lwip_shutdown(a,b)
 #define closesocket(s)        lwip_close(s)

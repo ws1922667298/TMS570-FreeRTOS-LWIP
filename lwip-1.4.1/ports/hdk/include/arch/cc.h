@@ -48,6 +48,7 @@ typedef u32_t           mem_ptr_t;
 #define BYTE_ORDER BIG_ENDIAN
 #endif
 
+#define LWIP_PROVIDE_ERRNO
 
 #if defined(__arm__) && defined(__ARMCC_VERSION)
     //

@@ -68,7 +68,7 @@
 #define MEM_SIZE                        (30 * 1024) /* 30K */
 #define MEMP_NUM_PBUF                   48     
 #define MEMP_NUM_TCP_PCB                16    
-#define PBUF_POOL_SIZE                  96    
+#define PBUF_POOL_SIZE                  64
 
 /*****************************************************************************
 **                           IP Options
@@ -93,23 +93,23 @@
 /*****************************************************************************
 **                           TCP  Options
 *****************************************************************************/
-#define TCP_WND                         4096   /* default is 2048 */
-#define TCP_MSS                         1500        /* default is 128 */
-#define TCP_SND_BUF                     (4 * TCP_MSS)
+#define TCP_MSS                         (1500 - 40)        /* default is 128 */
+#define TCP_WND                         (11 * TCP_MSS)   /* default is 2048 */
+#define TCP_SND_BUF                     (11 * TCP_MSS)
 
 /*****************************************************************************
 **                           PBUF  Options
 *****************************************************************************/
 #define PBUF_LINK_HLEN                  14      /* default is 14 */
-#define PBUF_POOL_BUFSIZE               256
+#define PBUF_POOL_BUFSIZE               LWIP_MEM_ALIGN_SIZE(TCP_MSS+40+PBUF_LINK_HLEN)
                                            /* default is LWIP_MEM_ALIGN_SIZE(TCP_MSS+40+PBUF_LINK_HLEN)*/
 #define ETH_PAD_SIZE                    0           
-#define LWIP_NETCONN                    0          /*default is 1*/
+#define LWIP_NETCONN                    1          /*default is 1*/
 
 /*****************************************************************************
 **                           Socket  Options
 *****************************************************************************/
-#define LWIP_SOCKET                     0           /* default is 1 */
+#define LWIP_SOCKET                     1           /* default is 1 */
 
 /*****************************************************************************
 **                          Debugging options

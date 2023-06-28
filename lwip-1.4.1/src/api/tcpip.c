@@ -86,7 +86,6 @@ tcpip_thread(void *arg)
     LWIP_TCPIP_THREAD_ALIVE();
     /* wait for a message, timeouts are processed while waiting */
     sys_timeouts_mbox_fetch(&mbox, (void **)&msg);\
-      _disable_IRQ();
     LOCK_TCPIP_CORE();
 
     switch (msg->type) {
@@ -149,8 +148,6 @@ tcpip_thread(void *arg)
       break;
     }
   }
-
-    _enable_IRQ();
 }
 
 /**

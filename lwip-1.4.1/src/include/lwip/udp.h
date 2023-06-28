@@ -111,7 +111,7 @@ struct udp_pcb {
 #endif /* LWIP_UDPLITE */
 
   /** receive callback function */
-  udp_recv_fn recv;
+  udp_recv_fn udp_recv;
   /** user-supplied argument for the recv callback */
   void *recv_arg;  
 };

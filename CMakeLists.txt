@@ -85,7 +85,9 @@ set(SOURCE_FILES
         source/os_tasks.c
         source/os_timer.c
         example/hdk/src/lwip_main.c
-        lwip-1.4.1/ports/hdk/lwiplib.c lwip-1.4.1/apps/httpserver_raw/httpd.c lwip-1.4.1/apps/httpserver_raw/fs.c lwip-1.4.1/src/core/timers.c)
+        lwip-1.4.1/ports/hdk/lwiplib.c lwip-1.4.1/apps/httpserver_raw/httpd.c lwip-1.4.1/apps/httpserver_raw/fs.c lwip-1.4.1/src/core/timers.c
+        lwip-1.4.1/apps/httpserver_raw/lwiperf.c
+        )
 
 add_executable(${PROJECT_NAME}.out ${SOURCE_FILES} ${LINKER_SCRIPT})
 target_link_libraries(${PROJECT_NAME}.out ${TOOLCHAIN_PATH}/lib/rtsv7R4_T_be_v3D16_eabi.lib)

@@ -69,7 +69,7 @@ struct raw_pcb {
   u8_t protocol;
 
   /** receive callback function */
-  raw_recv_fn recv;
+  raw_recv_fn row_recv;
   /* user-supplied argument for the recv callback */
   void *recv_arg;
 };

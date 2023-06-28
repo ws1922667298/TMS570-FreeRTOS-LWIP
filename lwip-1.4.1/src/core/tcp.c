@@ -1331,7 +1331,7 @@ tcp_alloc(u8_t prio)
     pcb->polltmr = 0;
 
 #if LWIP_CALLBACK_API
-    pcb->recv = tcp_recv_null;
+    pcb->lwip_recv = tcp_recv_null;
 #endif /* LWIP_CALLBACK_API */  
     
     /* Init KEEPALIVE timer */
@@ -1392,7 +1392,7 @@ void
 tcp_recv(struct tcp_pcb *pcb, tcp_recv_fn recv)
 {
   LWIP_ASSERT("invalid socket state for recv callback", pcb->state != LISTEN);
-  pcb->recv = recv;
+  pcb->lwip_recv = recv;
 }
 
 /**
@@ -1740,3 +1740,19 @@ tcp_pcbs_sane(void)
 #endif /* TCP_DEBUG */
 
 #endif /* LWIP_TCP */
+
+struct tcp_pcb *
+tcp_new_ip_type(u8_t type)
+{
+    struct tcp_pcb *pcb;
+    pcb = tcp_alloc(TCP_PRIO_NORMAL);
+#if LWIP_IPV4 && LWIP_IPV6
+    if (pcb != NULL) {
+    IP_SET_TYPE_VAL(pcb->local_ip, type);
+    IP_SET_TYPE_VAL(pcb->remote_ip, type);
+  }
+#else
+    LWIP_UNUSED_ARG(type);
+#endif /* LWIP_IPV4 && LWIP_IPV6 */
+    return pcb;
+}

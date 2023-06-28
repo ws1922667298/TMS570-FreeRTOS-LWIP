@@ -157,11 +157,11 @@ void EMAC_LwIP_Main(uint8_t *macAddress) {
 
     // 创建信号量
     semaphoreHandle = xSemaphoreCreateBinary();
-    xTaskCreate(lwipRTask, "lwipRTask", 512, NULL, 5, NULL);
+    xTaskCreate(lwipRTask, "lwipRTask", 512, NULL, 4, NULL);
 //    xTaskCreate(lwipTTask, "lwipTTask", 512, NULL, 1, 0);
 
-    IntMasterIRQEnable();
-    _enable_FIQ();
+//    IntMasterIRQEnable();
+//    _enable_FIQ();
 //    if (0 == ipAddr) {
 //        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
 //        sciDisplayText(sciREGx, txtCRLF, sizeof(txtCRLF));
